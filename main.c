@@ -3,7 +3,10 @@
 #include <stdarg.h>
 #include <unistd.h>
 int ft_printf(const char *str, ...);
-
+void	ft_putchar(char c)
+{
+	write(1, &c, 1);
+}
 static int	int_size(long long int n)
 {
 	int	len;
@@ -68,38 +71,86 @@ unsigned int	ft_strlen(char *str)
 	return (i);
 }
 
-static void	detect_next_char(char *str, va_list args)
+static char	*detect_next_char(char *str, va_list args)
 {
-	int	i = 0;
-	int j = 0;
-	char *number_str;
-
+	char *number_str = "";
 	int value = va_arg(args, int);
-	if (str[i] == 'd')
+
+	if (*str == 'd')
 		number_str = ft_itoa(value);
+	else if (*str == 'c')
+		ft_putchar(value);
+	else if (*str == 'p')
+	// else if (*str == 'i')
+	// else if (*str == 's')
+	// else if (*str == 'u')
+	// else if (*str == 'x')
+	// else if (*str == 'X')
+	// else if (*str == '%')
 	write(1, number_str, ft_strlen(number_str));
-	while (str[i] != '%' && str[i] != '\0')
-	{
-		write(1, &str[i], 1);
-		++i; 
-	}
+	return str;
+}
+
+#include <stdio.h>
+char * decToHex(long long int decimal) 
+{
+    if (decimal == 0) 
+    {
+        printf("Hexadecimal: 0\n");
+        return;
+    }
+
+    char hexadecimal[100];
+    int indx = 0;
+
+    while (decimal > 0) 
+    {
+        int remainder = decimal % 16;
+
+        if (remainder < 10)
+            hexadecimal[indx++] = remainder + '0';
+        else
+            hexadecimal[indx++] = remainder + 'A' - 10;
+
+        decimal /= 16;
+    }
+
+    printf("Hexadecimal number is: ");
+
+    for (int i = indx - 1; i >= 0; i--)
+        printf("%c", hexadecimal[i]);
+
+    return (hexadecimal);
+}
+
+int main()
+{
+    int a = 100;
+    long long int b = &a;
+    ;
+    
+    printf("%s", decToHex(b));
+    printf("%p", &a);
 }
 
 int ft_printf(const char *str, ...)
 {
 	va_list args;
-	int i = 0;
 	va_start(args, str);
-
-	while (str[i] != '%' && str[i] != '\0' && str[i + 1] != '\0')
+	while (*str != '\0')// str + 1
 	{
-		detect_next_char((char *)&str[i + 1], args);
-		i++;
+		if (*str == '%')
+			str = detect_next_char((char *)(str + 1), args);
+		else
+			write(1, str, 1);
+		
+		str++;
 	}
+	return 1;
 }
 
 int	main()
 {
-	char *string = "hell%od";
-	ft_printf("h  %d   f   %d  k  %d    k", 5443,4,5);
+	// char *string = "hell%od";
+	ft_printf("-%d-  -%c-  -%d-", 5443,'s',5);
 }
