@@ -7,6 +7,38 @@ void	ft_putchar(char c)
 {
 	write(1, &c, 1);
 }
+
+void	ft_putstr(char *str)
+{
+	int	i;
+
+	i = 0;
+	while (str[i] != 0)
+	{
+		write(1, &str[i], 1);
+		i++;
+	}
+}
+void	ft_putnbr(int nb)
+{
+	char	k;
+
+	if (nb == -2147483648)
+		write(1, "-2147483648", 11);
+	else
+	{
+		if (nb < 0)
+		{
+			write(1, "-", 1);
+			nb = -nb;
+		}
+		if (nb > 9)
+			ft_putnbr(nb / 10);
+		k = nb % 10 + '0';
+		write (1, &k, 1);
+	}
+}
+
 static int	int_size(long long int n)
 {
 	int	len;
@@ -71,79 +103,73 @@ unsigned int	ft_strlen(char *str)
 	return (i);
 }
 
+void	printHex(long int decimal, int flag, int is_pointer) 
+{
+    char	hexadecimal[100];
+    int		index;
+	int		remainder;
+	char	hex_char;
+
+	if (flag)
+		hex_char = 'a';
+	else
+		hex_char = 'A';
+	index = 0;
+    if (decimal == 0) 
+        return ;
+    while (decimal > 0) 
+    {
+        remainder = decimal % 16;
+        if (remainder < 10)
+            hexadecimal[index++] = remainder + '0';
+        else
+            hexadecimal[index++] = remainder + hex_char - 10;
+        decimal /= 16;
+    }
+	if (is_pointer)
+		write(1, "0x", 2);
+	while (index >= 0)
+		write(1, &hexadecimal[index--], 1);
+}
+
 static char	*detect_next_char(char *str, va_list args)
 {
-	char *number_str = "";
-	int value = va_arg(args, int);
+	long long int value = va_arg(args, long long int);
 
 	if (*str == 'd')
-		number_str = ft_itoa(value);
+		ft_putnbr(value);
 	else if (*str == 'c')
 		ft_putchar(value);
 	else if (*str == 'p')
+		printHex(value, 1, 1);
+	else if (*str == 'x') 
+		printHex(value, 1, 0);
+	else if (*str == 'X')
+		printHex(value, 0, 0);
+	else if (*str == '%')
+		ft_putchar('%');
+	else if (*str == 's')
+		ft_putstr((char *)value);
 	// else if (*str == 'i')
 	// else if (*str == 's')
 	// else if (*str == 'u')
 	// else if (*str == 'x')
 	// else if (*str == 'X')
 	// else if (*str == '%')
-	write(1, number_str, ft_strlen(number_str));
+	// write(1, number_str, ft_strlen(number_str));
 	return str;
-}
-
-#include <stdio.h>
-char * decToHex(long long int decimal) 
-{
-    if (decimal == 0) 
-    {
-        printf("Hexadecimal: 0\n");
-        return;
-    }
-
-    char hexadecimal[100];
-    int indx = 0;
-
-    while (decimal > 0) 
-    {
-        int remainder = decimal % 16;
-
-        if (remainder < 10)
-            hexadecimal[indx++] = remainder + '0';
-        else
-            hexadecimal[indx++] = remainder + 'A' - 10;
-
-        decimal /= 16;
-    }
-
-    printf("Hexadecimal number is: ");
-
-    for (int i = indx - 1; i >= 0; i--)
-        printf("%c", hexadecimal[i]);
-
-    return (hexadecimal);
-}
-
-int main()
-{
-    int a = 100;
-    long long int b = &a;
-    ;
-    
-    printf("%s", decToHex(b));
-    printf("%p", &a);
 }
 
 int ft_printf(const char *str, ...)
 {
 	va_list args;
 	va_start(args, str);
-	while (*str != '\0')// str + 1
+	while (*str != '\0')
 	{
 		if (*str == '%')
 			str = detect_next_char((char *)(str + 1), args);
 		else
 			write(1, str, 1);
-		
 		str++;
 	}
 	return 1;
@@ -152,5 +178,14 @@ int ft_printf(const char *str, ...)
 int	main()
 {
 	// char *string = "hell%od";
-	ft_printf("-%d-  -%c-  -%d-", 5443,'s',5);
+	// ft_printf("-%d- -%c- -%d- -%p-", 5443, 's', 5, );
+	char *somestr = "hello darkness my old friend";
+	int a = 123;
+	int *pa = &a;
+	// long long int pval = pa;?
+	// char k = 'l';
+	printf("-%d- -%p- -%x- -%X- -%%- -%s- \n", a, pa, a, a, somestr);
+	ft_printf("-%d- -%p- -%x- -%X- -%%- -%s-\n", a, pa, a, a, somestr);
+	// printf("-%d-\n", pa);
+	// printHex(pa);
 }
