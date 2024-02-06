@@ -2,22 +2,18 @@ NAME = libftprintf.a
 
 SRCS =  ft_printf.c
 
-SURPL_O = ft_printf.o 
-
 CC = cc
 
-FLAGS = -c -Wall -Wextra -Werror
+FLAGS = -Wall -Wextra -Werror
 
 OBJS = $(SRCS:.c=.o)
 
-
 all : $(NAME)
-
 
 $(NAME): $(OBJS)
 	ar -rcs $(NAME) $(OBJS)
 
-%.c : %.o
+%.o : %.c
 	$(CC) $(CFLAGS) -c $< -o $@ 
 
 clean : 
