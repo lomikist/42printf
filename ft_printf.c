@@ -21,57 +21,33 @@ static int	ft_putstr(char *str)
 	return (count);
 }
 
-static int	ft_putnbr(int nb)
-{
-	unsigned int	nbr;
-	int				count;
-
-	count = 0;
-	if (nb < 0)
-	{
-		count += ft_putchar('-');
-		nbr = nb * -1;
-	}
-	else
-		nbr = nb;
-	if (nbr >= 10)
-		count +=ft_putnbr(nbr / 10);
-	count += ft_putchar(nbr % 10 + 48);
-	return (count);
-}
-
-static int decToHex(long long int decimal, int is_pointer, int lower_upper)
+static int dec_to_hex(int decimal, char *base, size_t divider)
 {
 	char	hexadecimal[100];
-	char	hex_char;
-	int		indx;
+	int		i;
 	int		count;
 
-	indx = 0;
+	i = 0;
 	count = 0;
-	if (lower_upper)
-			hex_char = 'a';
-	else
-			hex_char = 'A';
 	if (decimal == 0)
-			return 0;
+		return 0;
+	else if (decimal < 0)
+	{
+		count += ft_putchar('-');
+		decimal = -decimal;
+	}//!TODO here
 	while (decimal > 0)
 	{
-		int remainder = decimal % 16;
+		int remainder = decimal % divider;
 		if (remainder < 10)
-			hexadecimal[indx++] = remainder + '0';
+			hexadecimal[i++] = base[remainder];
 		else
-			hexadecimal[indx++] = remainder + hex_char - 10;
-		decimal /= 16;
+			hexadecimal[i++] = base[remainder];
+		decimal /= divider;
 	}
-	if (is_pointer)
+	while (i-- > 0)
 	{
-		count += 2;
-		write(1, "0x", 2);
-	}
-	while (indx-- > 0)
-	{
-		write(1, &hexadecimal[indx], 1);
+		write(1, &hexadecimal[i], 1);
 		count++;
 	}
 	return (count);
@@ -80,19 +56,23 @@ static int decToHex(long long int decimal, int is_pointer, int lower_upper)
 static char	 *detect_next_char(char *str, va_list args, int *count)
 {
 	if (*str == 'd' || *str == 'i')
-		*count = *count + ft_putnbr(va_arg(args, long long int));
+		*count = *count + dec_to_hex(va_arg(args, int), "0123456789abcdef", 10);
 	else if (*str == 'c')
 		*count = *count + ft_putchar(va_arg(args, long long int));
 	else if (*str == 'x')
-		*count = *count + decToHex(va_arg(args, long long int), 0, 1);
+		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789abcdef", 16);
 	else if (*str == 'X')
-		*count = *count + decToHex(va_arg(args, long long int), 0, 0);
+		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789ABCDEF", 16);
 	else if (*str == 'p')
-		*count = *count + decToHex(va_arg(args, long long int), 1, 1);
+	{
+		write(1, "0x", 2);
+		count += 2;
+		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789abcdef", 16);
+	}
 	else if (*str == 's')
 		*count = *count + ft_putstr((char *)va_arg(args, long long int));
 	else if (*str == 'u')
-		*count = *count + ft_putnbr((unsigned long int)va_arg(args, unsigned long int));
+		*count = *count + dec_to_hex(va_arg(args, unsigned), "0123456789abcdef", 10);
 	else if (*str == '%')
 		*count = *count + ft_putchar('%');
 	return str;
@@ -115,13 +95,13 @@ int ft_printf(const char *str, ...)
 	}
 	return (count);
 }
-// #include <stdio.h>
-// int	 main()
-// {
-// 		 char *string = "hellsdad";
-// 		 ft_printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", 5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
-// 			printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", 5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
-// }
+#include <stdio.h>
+int	 main()
+{
+		 char *string = "hellsdad";
+		 ft_printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
+			printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
+}
 // 		ft_printf("-%X-\n", -1);
 // 		printf("-%X-\n", -1);	
 // 		ft_printf("-%X-\n", 1);
