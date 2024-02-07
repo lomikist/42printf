@@ -21,29 +21,24 @@ static int	ft_putstr(char *str)
 	return (count);
 }
 
-static int dec_to_hex(int decimal, char *base, size_t divider)
+static int dec_to_hex(long int  decimal, char *base, size_t divider)
 {
 	char	hexadecimal[100];
 	int		i;
 	int		count;
+	int		remainder;
 
 	i = 0;
 	count = 0;
+	remainder = 0;
 	if (decimal == 0)
-		return 0;
-	else if (decimal < 0)
+		count = ft_putchar('0');
+	while (decimal != 0)
 	{
-		count += ft_putchar('-');
-		decimal = -decimal;
-	}//!TODO here
-	while (decimal > 0)
-	{
-		int remainder = decimal % divider;
-		if (remainder < 10)
-			hexadecimal[i++] = base[remainder];
-		else
-			hexadecimal[i++] = base[remainder];
+		remainder = decimal % divider;
+		hexadecimal[i] = base[remainder];
 		decimal /= divider;
+		++i;
 	}
 	while (i-- > 0)
 	{
@@ -53,26 +48,51 @@ static int dec_to_hex(int decimal, char *base, size_t divider)
 	return (count);
 }
 
-static char	 *detect_next_char(char *str, va_list args, int *count)
+int prepear_for_hex(long long int number, char specify, int base_count)
 {
-	if (*str == 'd' || *str == 'i')
-		*count = *count + dec_to_hex(va_arg(args, int), "0123456789abcdef", 10);
-	else if (*str == 'c')
-		*count = *count + ft_putchar(va_arg(args, long long int));
-	else if (*str == 'x')
-		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789abcdef", 16);
-	else if (*str == 'X')
-		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789ABCDEF", 16);
-	else if (*str == 'p')
+	int	count;
+
+	count = 0;
+	if ((specify == 'd' || specify == 'i' || specify == 'u') && number < 0)
+	{
+		if (specify == 'u')
+			number = (unsigned)number;
+		else 
+		{
+			count += ft_putchar('-');
+			number = -number;
+		}
+	}
+	if(specify == 'p' && !number)
+	{
+		write(1, "0x0", 3);
+		count += 3;
+	}
+	else if(specify == 'p')
 	{
 		write(1, "0x", 2);
 		count += 2;
-		*count = *count + dec_to_hex(va_arg(args, long long int), "0123456789abcdef", 16);
 	}
+	dec_to_hex(number, "0123456789abcdef", base_count);
+	return (count);
+}
+
+static char	 *detect_next_char(char *str, va_list args, int *count)
+{
+	if (*str == 'd' || *str == 'i')
+		*count = *count + prepear_for_hex(va_arg(args, int), 'd', 10);//!TODO ask it to Davo if its is right.
+	else if (*str == 'c')
+		*count = *count + ft_putchar(va_arg(args, long long int));
+	else if (*str == 'x')
+		*count = *count + dec_to_hex(va_arg(args, long int), "0123456789abcdef", 16);
+	else if (*str == 'X')
+		*count = *count + dec_to_hex(va_arg(args, ssize_t), "0123456789ABCDEF", 16);
+	else if (*str == 'p')
+		*count = *count + prepear_for_hex(va_arg(args, long long int), 'p', 16);
 	else if (*str == 's')
 		*count = *count + ft_putstr((char *)va_arg(args, long long int));
 	else if (*str == 'u')
-		*count = *count + dec_to_hex(va_arg(args, unsigned), "0123456789abcdef", 10);
+		*count = *count + prepear_for_hex(va_arg(args, long long int), 'u', 10);
 	else if (*str == '%')
 		*count = *count + ft_putchar('%');
 	return str;
@@ -99,11 +119,17 @@ int ft_printf(const char *str, ...)
 int	 main()
 {
 		 char *string = "hellsdad";
-		 ft_printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
-			printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
-}
-// 		ft_printf("-%X-\n", -1);
-// 		printf("-%X-\n", -1);	
+
+// 		printf("-%%%x-\n", -42);
+// 		ft_printf("-%%%x-\n", -42);
+// 		printf("++++++++++++++++++++++++");
+// }
+// 		 ft_printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
+// 			printf("-%d- -%c- -%x- -%X- -%p- -%s- -%i- -%u- \n", -5443, 's', -124, -124, &string[0], &string[0], 3241, -42324);
+// // }
+// 		ft_printf("-%X-\n", -132);
+// 		printf("-%X-\n", -132);
+// // }	
 // 		ft_printf("-%X-\n", 1);
 // 		printf("-%X-\n", 1);
 // 		ft_printf("-%X-\n", 9);
@@ -143,6 +169,8 @@ int	 main()
 // 		ft_printf("-%X-\n", -101);
 // 		printf("-%X-\n", -101);
 
+
+
 // 		printf("%c\n", '0');
 // 		ft_printf("%c\n", '0');
 // 		printf(" %c \n", '0');
@@ -161,4 +189,7 @@ int	 main()
 // 		ft_printf(" %c %c %c \n", '2', '1', 0);
 //         printf(" %c %c %c \n", 0, '1', '2');
 //         ft_printf(" %c %c %c \n", 0, '1', '2');
-// }
+		
+		printf("%%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%%%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %c%%\n", 'A', "42", 42, 42 ,42 , 42, 42, 'B', "-42", -42, -42 , 42, 'C', "0", 0, 0 ,0 ,0, 42, 0);
+		ft_printf("%%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%%%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %c%%", 'A', "42", 42, 42 ,42 , 42, 42, 'B', "-42", -42, -42, 42, 'C', "0", 0, 0 ,0 ,0, 42, 0);
+}
