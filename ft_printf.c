@@ -88,6 +88,8 @@ static char	*detect_next_char(char *str, va_list args, int *count)
 		*count = *count + prepear_for_hex(va_arg(args, unsigned int), 'u', 10);
 	else if (*str == '%')
 		*count = *count + ft_putchar('%');
+	else
+		return ("");
 	return (str);
 }
 
